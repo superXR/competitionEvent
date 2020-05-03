@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.edu.sdu.ise.labs.dao.Competition_eventMapper">
+    <resultMap id="BaseResultMap" type="cn.edu.sdu.ise.labs.model.Competition_event">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="tenant_code" property="tenantCode" jdbcType="VARCHAR"/>
+        <result column="competition_event_code" property="competitionEventCode" jdbcType="VARCHAR"/>
+        <result column="competition_event_name" property="competitionEventName" jdbcType="VARCHAR"/>
+        <result column="suite_type" property="suiteType" jdbcType="VARCHAR"/>
+        <result column="plan_start_at" property="planStartAt" jdbcType="TIMESTAMP"/>
+        <result column="plan_end_at" property="planEndAt" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="VARCHAR"/>
+        <result column="created_at" property="createdAt" jdbcType="TIMESTAMP"/>
+        <result column="updated_at" property="updatedAt" jdbcType="TIMESTAMP"/>
+        <result column="created_by" property="createdBy" jdbcType="VARCHAR"/>
+        <result column="updated_by" property="updatedBy" jdbcType="VARCHAR"/>
+
+
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, tenant_code,competition_event_code, competition_event_name, suite_type, plan_start_at, plan_end_at,
+    status, created_at, updated_at, created_by, updated_by
+  </sql>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer">
+        select
+        <include refid="Base_Column_List"/>
+        from competition_event
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from competition_event
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+    <insert id="insert" parameterType="cn.edu.sdu.ise.labs.model.Competition_event">
+        insert into competition_event (id,tenant_code, competition_event_code, competition_event_name,
+        suite_type, plan_start_at, plan_end_at,
+        status, created_by, updated_by)
+        values (#{id,jdbcType=INTEGER}, #{tenantCode,jdbcType=VARCHAR},#{competitionEventCode,jdbcType=VARCHAR},
+        #{competitionEventName,jdbcType=VARCHAR},
+        #{suiteType,jdbcType=VARCHAR}, #{planStartAt,jdbcType=TIMESTAMP}, #{planEndAt,jdbcType=TIMESTAMP},
+        #{status,jdbcType=VARCHAR},
+        #{createdBy,jdbcType=VARCHAR}, #{updatedBy,jdbcType=VARCHAR})
+    </insert>
+
+    <!-- 更新 -->
+    <update id="updateByPrimaryKey" parameterType="cn.edu.sdu.ise.labs.model.Competition_event">
+    update competition_event
+    set
+      competition_event_name = #{competitionEventName,jdbcType=VARCHAR},
+      suite_type = #{suiteType,jdbcType=VARCHAR},
+      plan_start_at = #{planStartAt,jdbcType=TIMESTAMP},
+      plan_end_at = #{planEndAt,jdbcType=TIMESTAMP},
+      status = #{status,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+    <!-- 批量删除 -->
+    <delete id="deleteByCodes">
+        delete
+        from competition_event
+        where competition_event_code in
+        <foreach item="item" index="index" collection="codeList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+    <!-- 获取部门(分页) -->
+    <select id="list" resultMap="BaseResultMap">
+        <if test="queryDTO.competitionEventName != null and queryDTO.competitionEventCode !=null">
+            select
+            <include refid="Base_Column_List"/>
+            from competition_event
+            <where>
+                competition_event_name like #{queryDTO.competitionEventName}
+                and competition_event_code like #{queryDTO.competitionEventCode}
+                and tenant_code = #{tenantCode}
+            </where>
+        </if>
+        <if test="test=queryDTO.competitionEventName == null and queryDTO.competitionEventCode !=null">
+            select
+            <include refid="Base_Column_List"/>
+            from competition_event
+            <where>
+                competition_event_code like #{queryDTO.competitionEventCode}
+                and tenant_code = #{tenantCode}
+            </where>
+        </if>
+        <if test="test=queryDTO.competitionEventName != null and queryDTO.competitionEventCode == null">
+            select
+            <include refid="Base_Column_List"/>
+            from competition_event
+            <where>
+                competition_event_name like #{queryDTO.competitionEventName}
+                and tenant_code = #{tenantCode}
+            </where>
+        </if>
+        <if test="test=queryDTO.competitionEventName == null and queryDTO.competitionEventCode ==null">
+            select
+            <include refid="Base_Column_List"/>
+            from competition_event
+            <where>
+                tenant_code = #{tenantCode}
+            </where>
+        </if>
+
+        limit #{offset}, #{limit}
+    </select>
+    <!-- 根据代码列表获取部门列表 -->
+    <select id="listByCodes" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from competition_event
+        where competition_eventcode in
+        <foreach item="item" index="index" collection="codeList" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        and tenant_code = #{tenantCode}
+    </select>
+    <select id="listByName" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from competition_event
+        where
+        <if test="competitionEventName!=null and competitionEventCode!=null">
+            competition_event_name like #{competitionEventName}
+            and competition_event_code like #{competitionEventCode}
+            and tenant_code = #{tenantCode}
+        </if>
+        <if test="competitionEventName==null and competitionEventCode!=null">
+            competition_event_code like #{competitionEventCode}
+            and tenant_code = #{tenantCode}
+        </if>
+        <if test="competitionEventName!=null and competitionEventCode==null">
+            competition_event_name like #{competitionEventName}
+            and tenant_code = #{tenantCode}
+        </if>
+        <if test="competitionEventName==null and competitionEventCode==null">
+            tenant_code = #{tenantCode}
+        </if>
+
+    </select>
+    <!-- 获取名字个数(分页) -->
+    <select id="count" resultType="integer">
+        <if test="queryDTO.competitionEventName!=null and queryDTO.competitionEventCode!=null">
+            select count(competition_event_name and competition_event_code)
+            from competition_event
+            <where>
+                competition_event_name like #{queryDTO.competitionEventName}
+                and competition_event_code like #{queryDTO.competitionEventCode}
+                and tenant_code = #{tenantCode}
+            </where>
+
+        </if>
+        <if test="queryDTO.competitionEventName == null and queryDTO.competitionEventCode != null">
+            select count(competition_event_code)
+            from competition_event
+            <where>
+                competition_event_code like #{queryDTO.competitionEventCode}
+                and tenant_code = #{tenantCode}
+            </where>
+        </if>
+        <if test="queryDTO.competitionEventName != null and queryDTO.competitionEventCode == null">
+            select count(competition_event_name)
+            from competition_event
+            <where>
+                competition_event_name like #{queryDTO.competitionEventName}
+                and tenant_code = #{tenantCode}
+            </where>
+        </if>
+        <if test="queryDTO.competitionEventName == null and queryDTO.competitionEventCode == null">
+            select count(competition_event_name)
+            from competition_event
+            <where>
+                tenant_code = #{tenantCode}
+            </where>
+        </if>
+
+    </select>
+    <!-- 获取部门列表(分页) -->
+    <select id="getByCode" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from competition_event
+        where
+        competition_event_code=#{competition_eventCode}
+        and tenant_code = #{tenantCode}
+    </select>
+</mapper>
